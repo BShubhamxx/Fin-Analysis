@@ -1,6 +1,7 @@
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from auth import get_current_user
 
 app = FastAPI(title="Fin-Analysis API")
 
@@ -24,3 +25,7 @@ def read_root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+@app.get("/api/protected")
+def protected_route(user: dict = Depends(get_current_user)):
+    return {"message": "You are authenticated", "user_id": user.get("uid")}
