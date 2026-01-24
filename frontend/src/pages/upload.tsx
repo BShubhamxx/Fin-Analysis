@@ -231,6 +231,30 @@ export default function UploadPage() {
                                                         <span className="font-semibold">Warning:</span> Missing columns: {analysisResult.missing_required_columns.join(", ")}
                                                     </div>
                                                 )}
+
+                                                {analysisResult.analysis_report?.benford_analysis && (
+                                                    <div className="mt-4 pt-4 border-t">
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <span className="font-medium text-foreground">Fraud Detection (Benford's Law)</span>
+                                                            <span className={`px-2 py-1 rounded text-xs font-bold ${analysisResult.analysis_report.benford_analysis.verdict === 'Pass' ? 'bg-green-100 text-green-700' :
+                                                                    analysisResult.analysis_report.benford_analysis.verdict === 'Fail' ? 'bg-red-100 text-red-700' :
+                                                                        'bg-yellow-100 text-yellow-700'
+                                                                }`}>
+                                                                {analysisResult.analysis_report.benford_analysis.verdict.toUpperCase()}
+                                                            </span>
+                                                        </div>
+                                                        <div className="text-xs text-muted-foreground grid grid-cols-2 gap-2">
+                                                            <div>
+                                                                <span className="block opacity-70">MAD Score</span>
+                                                                {analysisResult.analysis_report.benford_analysis.mad_score}
+                                                            </div>
+                                                            <div>
+                                                                <span className="block opacity-70">Analyzed Rows</span>
+                                                                {analysisResult.analysis_report.benford_analysis.total_rows_analyzed}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
 

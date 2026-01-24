@@ -40,13 +40,22 @@ def preview_file(file_content: bytes | io.BytesIO, filename: str):
         # Check validation
         missing_columns = validate_standardized_data(df_standardized)
 
+        # Run Analysis Engine (Benford's Law)
+        benford_stats = None
+        if "Amount" in df_standardized.columns:
+             from services.analysis_engine import calculate_benford_stats
+             benford_stats = calculate_benford_stats(df_standardized["Amount"])
+
         # Prepare preview data
         preview = {
             "filename": filename,
             "original_columns": df.columns.tolist(),
             "mapped_columns": column_mapping,
             "missing_required_columns": missing_columns,
-            "preview_rows": df_standardized.head(5).replace({float('nan'): None}).to_dict(orient='records')
+            "preview_rows": df_standardized.head(5).replace({float('nan'): None}).to_dict(orient='records'),
+            "analysis_report": {
+                "benford_analysis": benford_stats
+            }
         }
         
         return preview

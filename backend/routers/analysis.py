@@ -30,7 +30,7 @@ async def analyze_upload(
     # Parse and preview
     preview_data = parsing_service.preview_file(content, file.filename)
     
-    # Save metadata to Firestore
+    # SAVE METADATA TO FIRESTORE
     try:
         from firebase_admin import firestore
         db = firestore.client()
