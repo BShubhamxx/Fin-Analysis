@@ -6,21 +6,30 @@ import { BenfordChart } from "@/components/dashboard/benford-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 
 export default function Dashboard() {
     const { user } = useAuth();
+    const [searchParams] = useSearchParams();
     const [latestAnalysis, setLatestAnalysis] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchLatest = async () => {
+        const fetchAnalysis = async () => {
             if (!user) return;
             try {
                 const token = await user.getIdToken();
-                // We'll reuse the history endpoint but just get the first item
-                // Ideally backend would have /api/dashboard or /api/history/latest
-                const response = await fetch("http://localhost:8000/api/history/", {
+                const analysisId = searchParams.get("id");
+
+                let url = "http://localhost:8000/api/history/";
+
+                // If ID is provided, fetch specific item. 
+                // Note: backend endpoint for specific item is /api/history/{id}
+                if (analysisId) {
+                    url = `http://localhost:8000/api/history/${analysisId}`;
+                }
+
+                const response = await fetch(url, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -28,9 +37,18 @@ export default function Dashboard() {
 
                 if (response.ok) {
                     const data = await response.json();
-                    if (data && data.length > 0) {
-                        setLatestAnalysis(data[0]);
+
+                    if (analysisId) {
+                        // Single object returned
+                        setLatestAnalysis(data);
+                    } else {
+                        // List returned, take first
+                        if (data && data.length > 0) {
+                            setLatestAnalysis(data[0]);
+                        }
                     }
+                } else {
+                    console.error("Failed to fetch data", response.status);
                 }
             } catch (error) {
                 console.error("Failed to fetch dashboard data:", error);
@@ -39,8 +57,8 @@ export default function Dashboard() {
             }
         };
 
-        fetchLatest();
-    }, [user]);
+        fetchAnalysis();
+    }, [user, searchParams]);
 
     if (loading) {
         return (
@@ -113,15 +131,15 @@ export default function Dashboard() {
                     <div className="space-y-6">
                         {analysis_report?.benford_analysis && (
                             <Card className={`${analysis_report.benford_analysis.verdict === 'Pass' ? 'border-green-200 bg-green-50/50 dark:bg-green-900/10' :
-                                    analysis_report.benford_analysis.verdict === 'Fail' ? 'border-red-200 bg-red-50/50 dark:bg-red-900/10' :
-                                        'border-yellow-200 bg-yellow-50/50 dark:bg-yellow-900/10'
+                                analysis_report.benford_analysis.verdict === 'Fail' ? 'border-red-200 bg-red-50/50 dark:bg-red-900/10' :
+                                    'border-yellow-200 bg-yellow-50/50 dark:bg-yellow-900/10'
                                 }`}>
                                 <CardHeader>
                                     <div className="flex items-center justify-between">
                                         <CardTitle className="text-base">Fraud Detection</CardTitle>
                                         <span className={`px-2 py-1 rounded text-xs font-bold ${analysis_report.benford_analysis.verdict === 'Pass' ? 'bg-green-100 text-green-700' :
-                                                analysis_report.benford_analysis.verdict === 'Fail' ? 'bg-red-100 text-red-700' :
-                                                    'bg-yellow-100 text-yellow-700'
+                                            analysis_report.benford_analysis.verdict === 'Fail' ? 'bg-red-100 text-red-700' :
+                                                'bg-yellow-100 text-yellow-700'
                                             }`}>
                                             {analysis_report.benford_analysis.verdict.toUpperCase()}
                                         </span>

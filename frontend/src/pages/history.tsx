@@ -13,6 +13,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Loader2, FileText, AlertCircle } from "lucide-react";
 
+import { useNavigate } from "react-router-dom";
+
 interface HistoryItem {
     id: string;
     filename: string;
@@ -33,11 +35,13 @@ interface HistoryItem {
 
 export default function HistoryPage() {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [history, setHistory] = useState<HistoryItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        // ... (existing fetch logic remains same)
         const fetchHistory = async () => {
             if (!user) return;
             try {
@@ -65,6 +69,7 @@ export default function HistoryPage() {
         fetchHistory();
     }, [user]);
 
+    // ... (loading/error states remain same)
     if (loading) {
         return (
             <div className="flex h-[50vh] items-center justify-center">
@@ -87,7 +92,7 @@ export default function HistoryPage() {
             <div className="mb-8">
                 <h1 className="text-3xl font-bold tracking-tight">Analysis History</h1>
                 <p className="text-muted-foreground">
-                    View your past uploads and fraud detection reports.
+                    View your past uploads and fraud detection reports. Click on a row to view full analysis.
                 </p>
             </div>
 
@@ -114,7 +119,11 @@ export default function HistoryPage() {
                             </TableHeader>
                             <TableBody>
                                 {history.map((item) => (
-                                    <TableRow key={item.id}>
+                                    <TableRow
+                                        key={item.id}
+                                        className="cursor-pointer hover:bg-muted/50 transition-colors"
+                                        onClick={() => navigate(`/dashboard?id=${item.id}`)}
+                                    >
                                         <TableCell className="font-medium">
                                             {new Date(item.timestamp).toLocaleDateString()} <span className="text-xs text-muted-foreground">{new Date(item.timestamp).toLocaleTimeString()}</span>
                                         </TableCell>
