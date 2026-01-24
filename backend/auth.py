@@ -12,7 +12,9 @@ load_dotenv()
 # For local dev/emulator, this might look different
 try:
     # Check if app is already initialized
-    initialize_app()
+    initialize_app(options={
+        'storageBucket': os.getenv('FIREBASE_STORAGE_BUCKET')
+    })
 except ValueError:
     pass
 

@@ -2,8 +2,11 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from auth import get_current_user
+from routers import analysis
 
 app = FastAPI(title="Fin-Analysis API")
+
+app.include_router(analysis.router)
 
 origins = [
     "http://localhost:5173",
