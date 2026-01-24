@@ -40,11 +40,14 @@ def preview_file(file_content: bytes | io.BytesIO, filename: str):
         # Check validation
         missing_columns = validate_standardized_data(df_standardized)
 
-        # Run Analysis Engine (Benford's Law)
+        # Run Analysis Engine (Benford's Law & Spending Summary)
         benford_stats = None
+        spending_summary = None
+        
         if "Amount" in df_standardized.columns:
-             from services.analysis_engine import calculate_benford_stats
+             from services.analysis_engine import calculate_benford_stats, calculate_spending_summary
              benford_stats = calculate_benford_stats(df_standardized["Amount"])
+             spending_summary = calculate_spending_summary(df_standardized)
 
         # Prepare preview data
         preview = {
@@ -54,7 +57,8 @@ def preview_file(file_content: bytes | io.BytesIO, filename: str):
             "missing_required_columns": missing_columns,
             "preview_rows": df_standardized.head(5).replace({float('nan'): None}).to_dict(orient='records'),
             "analysis_report": {
-                "benford_analysis": benford_stats
+                "benford_analysis": benford_stats,
+                "spending_summary": spending_summary
             }
         }
         

@@ -7,6 +7,8 @@ import { useAuth } from "@/components/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Progress } from "../components/ui/progress";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SummaryCards } from "@/components/dashboard/summary-cards";
+import { BenfordChart } from "@/components/dashboard/benford-chart";
 
 export default function UploadPage() {
     const { user } = useAuth();
@@ -55,6 +57,7 @@ export default function UploadPage() {
         setError(null);
         setSuccess(false);
         setProgress(0);
+        setAnalysisResult(null);
     };
 
     const handleUpload = async () => {
@@ -120,7 +123,7 @@ export default function UploadPage() {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-3xl">
+        <div className="container mx-auto px-4 py-8 max-w-5xl">
             <div className="mb-8 text-center space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight">Upload Financial Data</h1>
                 <p className="text-muted-foreground">
@@ -128,156 +131,183 @@ export default function UploadPage() {
                 </p>
             </div>
 
-            <Card className="border-dashed border-2 shadow-sm">
-                <CardHeader>
-                    <CardTitle>File Upload</CardTitle>
-                    <CardDescription>Drag and drop your file here, or click to browse</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <AnimatePresence mode="wait">
-                        {!file ? (
-                            <div
-                                {...getRootProps()}
-                                className={`
-                  flex flex-col items-center justify-center p-12 text-center rounded-xl cursor-pointer transition-all duration-200
-                  bg-secondary/20 hover:bg-secondary/40 border-2 border-transparent
-                  ${isDragActive ? "border-primary bg-primary/5 scale-[1.02]" : ""}
-                  ${error ? "border-destructive/50 bg-destructive/5" : ""}
-                `}
-                            >
-                                <motion.div
-                                    key="dropzone"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
+            {!success ? (
+                <Card className="border-dashed border-2 shadow-sm max-w-3xl mx-auto">
+                    <CardHeader>
+                        <CardTitle>File Upload</CardTitle>
+                        <CardDescription>Drag and drop your file here, or click to browse</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <AnimatePresence mode="wait">
+                            {!file ? (
+                                <div
+                                    {...getRootProps()}
+                                    className={`
+                      flex flex-col items-center justify-center p-12 text-center rounded-xl cursor-pointer transition-all duration-200
+                      bg-secondary/20 hover:bg-secondary/40 border-2 border-transparent
+                      ${isDragActive ? "border-primary bg-primary/5 scale-[1.02]" : ""}
+                      ${error ? "border-destructive/50 bg-destructive/5" : ""}
+                    `}
                                 >
-                                    <input {...getInputProps()} />
-                                    <div className="size-16 rounded-full bg-background shadow-sm flex items-center justify-center mb-4 mx-auto">
-                                        <CloudUpload className={`size-8 text-primary ${isDragActive ? "animate-bounce" : ""}`} />
+                                    <motion.div
+                                        key="dropzone"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                    >
+                                        <input {...getInputProps()} />
+                                        <div className="size-16 rounded-full bg-background shadow-sm flex items-center justify-center mb-4 mx-auto">
+                                            <CloudUpload className={`size-8 text-primary ${isDragActive ? "animate-bounce" : ""}`} />
+                                        </div>
+                                        <h3 className="text-lg font-semibold mb-1">
+                                            {isDragActive ? "Drop the file here" : "Click to upload or drag and drop"}
+                                        </h3>
+                                        <p className="text-sm text-muted-foreground mb-4">
+                                            CSV or Excel files (max 50MB)
+                                        </p>
+                                        {error && (
+                                            <div className="flex items-center gap-2 text-destructive text-sm font-medium mt-2 justify-center">
+                                                <AlertCircle className="size-4" />
+                                                {error}
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                </div>
+                            ) : (
+                                <motion.div
+                                    key="file-preview"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="bg-card border rounded-xl p-6"
+                                >
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className="size-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                                <FileSpreadsheet className="size-6" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-foreground truncate max-w-[200px] md:max-w-md">
+                                                    {file.name}
+                                                </h4>
+                                                <p className="text-sm text-muted-foreground">
+                                                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {!uploading && (
+                                            <Button variant="ghost" size="icon" onClick={removeFile} className="text-muted-foreground hover:text-destructive">
+                                                <X className="size-5" />
+                                            </Button>
+                                        )}
                                     </div>
-                                    <h3 className="text-lg font-semibold mb-1">
-                                        {isDragActive ? "Drop the file here" : "Click to upload or drag and drop"}
-                                    </h3>
-                                    <p className="text-sm text-muted-foreground mb-4">
-                                        CSV or Excel files (max 50MB)
-                                    </p>
-                                    {error && (
-                                        <div className="flex items-center gap-2 text-destructive text-sm font-medium mt-2 justify-center">
-                                            <AlertCircle className="size-4" />
-                                            {error}
+
+                                    {uploading ? (
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between text-xs text-muted-foreground">
+                                                <span>Uploading & Analyzing...</span>
+                                                <span>{Math.round(progress)}%</span>
+                                            </div>
+                                            <Progress value={progress} className="h-2" />
+                                        </div>
+                                    ) : (
+                                        <div className="flex justify-end gap-3 mt-4">
+                                            <Button variant="outline" onClick={removeFile}>Cancel</Button>
+                                            <Button onClick={handleUpload} className="shadow-lg shadow-primary/20">
+                                                Upload and Analyze
+                                            </Button>
                                         </div>
                                     )}
                                 </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </CardContent>
+                </Card>
+            ) : (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="bg-green-500/10 text-green-600 dark:text-green-400 p-4 rounded-lg flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                            <CheckCircle className="size-5" />
+                            <div>
+                                <p className="font-medium">Analysis Complete!</p>
+                                <p className="text-xs opacity-90">Your file has been processed successfully.</p>
                             </div>
-                        ) : (
-                            <motion.div
-                                key="file-preview"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="bg-card border rounded-xl p-6"
-                            >
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex items-center gap-4">
-                                        <div className="size-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                                            <FileSpreadsheet className="size-6" />
-                                        </div>
-                                        <div>
-                                            <h4 className="font-semibold text-foreground truncate max-w-[200px] md:max-w-md">
-                                                {file.name}
-                                            </h4>
-                                            <p className="text-sm text-muted-foreground">
-                                                {(file.size / 1024 / 1024).toFixed(2)} MB
-                                            </p>
-                                        </div>
+                        </div>
+                        <Button variant="ghost" size="sm" onClick={removeFile} className="hover:bg-green-500/20">
+                            Upload New File
+                        </Button>
+                    </div>
+
+                    {analysisResult?.analysis_report?.spending_summary && (
+                        <SummaryCards summary={analysisResult.analysis_report.spending_summary} />
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-4">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>File Stats</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-2 text-sm">
+                                    <div className="flex justify-between border-b pb-2">
+                                        <span className="text-muted-foreground">Filename:</span>
+                                        <span className="font-medium truncate max-w-[150px]">{analysisResult.filename}</span>
                                     </div>
-                                    {!uploading && !success && (
-                                        <Button variant="ghost" size="icon" onClick={removeFile} className="text-muted-foreground hover:text-destructive">
-                                            <X className="size-5" />
-                                        </Button>
-                                    )}
+                                    <div className="flex justify-between border-b pb-2">
+                                        <span className="text-muted-foreground">Rows Processed:</span>
+                                        <span className="font-medium">{analysisResult.preview_rows?.length > 0 ? (analysisResult.row_count || "N/A") : 0}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Columns Mapped:</span>
+                                        <span className="font-medium">{Object.keys(analysisResult.mapped_columns || {}).length}</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {analysisResult.missing_required_columns?.length > 0 && (
+                                <div className="bg-orange-500/10 text-orange-600 dark:text-orange-400 p-3 rounded text-xs">
+                                    <span className="font-semibold">Warning:</span> Missing columns: {analysisResult.missing_required_columns.join(", ")}
                                 </div>
+                            )}
 
-                                {uploading ? (
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between text-xs text-muted-foreground">
-                                            <span>Uploading & Analyzing...</span>
-                                            <span>{Math.round(progress)}%</span>
+                            {analysisResult.analysis_report?.benford_analysis && (
+                                <Card className={`${analysisResult.analysis_report.benford_analysis.verdict === 'Pass' ? 'border-green-200 bg-green-50/50 dark:bg-green-900/10' :
+                                        analysisResult.analysis_report.benford_analysis.verdict === 'Fail' ? 'border-red-200 bg-red-50/50 dark:bg-red-900/10' :
+                                            'border-yellow-200 bg-yellow-50/50 dark:bg-yellow-900/10'
+                                    }`}>
+                                    <CardHeader className="pb-2">
+                                        <div className="flex items-center justify-between">
+                                            <CardTitle className="text-base">Fraud Detection</CardTitle>
+                                            <span className={`px-2 py-1 rounded text-xs font-bold ${analysisResult.analysis_report.benford_analysis.verdict === 'Pass' ? 'bg-green-100 text-green-700' :
+                                                    analysisResult.analysis_report.benford_analysis.verdict === 'Fail' ? 'bg-red-100 text-red-700' :
+                                                        'bg-yellow-100 text-yellow-700'
+                                                }`}>
+                                                {analysisResult.analysis_report.benford_analysis.verdict.toUpperCase()}
+                                            </span>
                                         </div>
-                                        <Progress value={progress} className="h-2" />
-                                    </div>
-                                ) : success ? (
-                                    <div className="space-y-4">
-                                        <div className="bg-green-500/10 text-green-600 dark:text-green-400 p-4 rounded-lg flex items-center gap-3">
-                                            <CheckCircle className="size-5" />
-                                            <div>
-                                                <p className="font-medium">Analysis Complete!</p>
-                                                <p className="text-xs opacity-90">Your file has been processed successfully.</p>
-                                            </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-xs text-muted-foreground mb-2">
+                                            Benford's Law Analysis checks for natural digit distribution in transaction amounts.
+                                        </p>
+                                        <div className="text-xs font-mono">
+                                            Score: {analysisResult.analysis_report.benford_analysis.mad_score}
                                         </div>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
 
-                                        {analysisResult && (
-                                            <div className="text-sm space-y-2 border-t pt-4">
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">Rows Processed:</span>
-                                                    <span className="font-medium">{analysisResult.preview_rows?.length > 0 ? (analysisResult.row_count || "N/A") : 0}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">Columns Mapped:</span>
-                                                    <span className="font-medium">{Object.keys(analysisResult.mapped_columns || {}).length} / 4</span>
-                                                </div>
-                                                {analysisResult.missing_required_columns?.length > 0 && (
-                                                    <div className="bg-orange-500/10 text-orange-600 dark:text-orange-400 p-3 rounded text-xs mt-2">
-                                                        <span className="font-semibold">Warning:</span> Missing columns: {analysisResult.missing_required_columns.join(", ")}
-                                                    </div>
-                                                )}
-
-                                                {analysisResult.analysis_report?.benford_analysis && (
-                                                    <div className="mt-4 pt-4 border-t">
-                                                        <div className="flex items-center justify-between mb-2">
-                                                            <span className="font-medium text-foreground">Fraud Detection (Benford's Law)</span>
-                                                            <span className={`px-2 py-1 rounded text-xs font-bold ${analysisResult.analysis_report.benford_analysis.verdict === 'Pass' ? 'bg-green-100 text-green-700' :
-                                                                    analysisResult.analysis_report.benford_analysis.verdict === 'Fail' ? 'bg-red-100 text-red-700' :
-                                                                        'bg-yellow-100 text-yellow-700'
-                                                                }`}>
-                                                                {analysisResult.analysis_report.benford_analysis.verdict.toUpperCase()}
-                                                            </span>
-                                                        </div>
-                                                        <div className="text-xs text-muted-foreground grid grid-cols-2 gap-2">
-                                                            <div>
-                                                                <span className="block opacity-70">MAD Score</span>
-                                                                {analysisResult.analysis_report.benford_analysis.mad_score}
-                                                            </div>
-                                                            <div>
-                                                                <span className="block opacity-70">Analyzed Rows</span>
-                                                                {analysisResult.analysis_report.benford_analysis.total_rows_analyzed}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        <div className="flex justify-end gap-2 pt-2">
-                                            <Button variant="outline" onClick={removeFile}>Upload Another</Button>
-                                            <Button>View Dashboard</Button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="flex justify-end gap-3 mt-4">
-                                        <Button variant="outline" onClick={removeFile}>Cancel</Button>
-                                        <Button onClick={handleUpload} className="shadow-lg shadow-primary/20">
-                                            Upload and Analyze
-                                        </Button>
-                                    </div>
-                                )}
-                            </motion.div>
+                        {analysisResult.analysis_report?.benford_analysis && (
+                            <div className="md:col-span-1">
+                                <BenfordChart distribution={analysisResult.analysis_report.benford_analysis.distribution} />
+                            </div>
                         )}
-                    </AnimatePresence>
-                </CardContent>
-            </Card>
+                    </div>
+                </div>
+            )}
 
-            {/* Recent Uploads Section (Placeholder for now) */}
+            {/* Recent Uploads Section (Placeholder) */}
             <div className="mt-12">
                 <h2 className="text-xl font-semibold mb-4">Recent Analyses</h2>
                 <div className="grid gap-4">

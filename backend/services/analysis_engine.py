@@ -77,3 +77,86 @@ def calculate_benford_stats(series: pd.Series) -> dict:
         "verdict": verdict,
         "total_rows_analyzed": total_count
     }
+
+def calculate_spending_summary(df: pd.DataFrame) -> dict:
+    """
+    Calculates spending summary stats.
+    Requires: 'Amount' column. Optional: 'Date', 'Category'.
+    """
+    summary = {}
+    
+    if "Amount" not in df.columns:
+        return {}
+
+    # 1. Total Spend (Sum of negative numbers usually, but here likely absolute if mixed? 
+    # Let's assume input is standard: Debits are negative or positive depending on bank. 
+    # For now, let's sum numeric values. If we standardized columns, Amount is typically numeric.
+    # We will compute Total Volume (Sum of Abs) and Net Flow.
+    
+    # Clean numeric
+    amounts = pd.to_numeric(df["Amount"], errors='coerce').fillna(0)
+    
+    summary["total_volume"] = float(amounts.abs().sum())
+    summary["net_flow"] = float(amounts.sum())
+    summary["transaction_count"] = int(len(df))
+    summary["avg_transaction"] = float(amounts.mean()) if not df.empty else 0
+
+    # 2. Date Range & Trend
+    if "Date" in df.columns:
+        try:
+            # Check format first? Standardizer usually handles conversion to datetime objects if possible.
+            # But standardizer just regexes names, doesn't parse content yet? 
+            # Oh, the plan said "Standardizer... Convert data types". 
+            # Let's verify standardizer.py content. 
+            # Wait, standardizer logic in `standardizer.py` (checked earlier in `view_code_item` Step 821) 
+            # only renamed columns, didn't convert types. 
+            # I should probably robustly convert to datetime here or in standardizer.
+            # Let's do it here safely.
+            dates = pd.to_datetime(df["Date"], errors='coerce')
+            valid_dates = dates.dropna()
+            
+            if not valid_dates.empty:
+                summary["date_range"] = {
+                    "start": valid_dates.min().isoformat(),
+                    "end": valid_dates.max().isoformat()
+                }
+                
+                # Monthly Trend
+                # Group by Month-Year
+                # Create a temporary dataframe for grouping
+                temp_df = pd.DataFrame({"Date": dates, "Amount": amounts})
+                temp_df = temp_df.dropna(subset=["Date"])
+                
+                # Resample or GroupBy
+                # monthly = temp_df.set_index('Date').resample('M')['Amount'].sum() # 'M' is deprecated in favor of 'ME'
+                # Let's use string formatting for safer grouping without relying on deprecated pandas aliases
+                temp_df["Month"] = temp_df["Date"].dt.strftime("%Y-%m")
+                monthly_trend = temp_df.groupby("Month")["Amount"].sum().to_dict()
+                summary["monthly_trend"] = monthly_trend
+                
+        except Exception as e:
+            print(f"Date parsing failed in summary: {e}")
+
+    # 3. Category Breakdown
+    if "Category" in df.columns:
+        # Fill NA
+        cats = df["Category"].fillna("Uncategorized").astype(str)
+        # Group by Category, sum Amounts
+        # We probably want sum of ABS amounts to see volume per category? 
+        # Or just sum? Usually sum of expenses. 
+        # If dataset has income (positive) and expense (negative), summing might cancel out.
+        # Let's assume simpler: Breakdown by Count for now, or Sum of Abs?
+        # Let's do Count and Sum.
+        
+        # We need to join with amounts
+        temp_cat = pd.DataFrame({"Category": cats, "Amount": amounts})
+        breakdown = temp_cat.groupby("Category")["Amount"].agg(['sum', 'count'])
+        
+        # Convert to simple dict usually preferred for JSON
+        # Top 5 by volume
+        breakdown["abs_sum"] = breakdown["sum"].abs()
+        top_cats = breakdown.sort_values("abs_sum", ascending=False).head(6)
+        
+        summary["top_categories"] = top_cats.drop(columns=["abs_sum"]).to_dict(orient="index")
+
+    return summary

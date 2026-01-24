@@ -9,9 +9,8 @@ import LandingPage from "@/pages/landing";
 import UploadPage from "@/pages/upload";
 import { ProtectedRoute } from "@/components/protected-route";
 
-// Placeholder pages (will be implemented in later phases)
-const Dashboard = () => <div className="p-4"><h1 className="text-2xl font-bold">Dashboard</h1><p>Welcome to Fin-Analysis</p></div>;
-const HistoryPage = () => <div className="p-4"><h1 className="text-2xl font-bold">Analysis History</h1><p>View past analyses</p></div>;
+import Dashboard from "@/pages/dashboard";
+import HistoryPage from "@/pages/history";
 
 function App() {
     return (
