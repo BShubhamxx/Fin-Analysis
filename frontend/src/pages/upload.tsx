@@ -3,8 +3,6 @@ import { useCallback, useState } from "react";
 import { useDropzone, FileRejection } from "react-dropzone";
 import { CloudUpload, FileSpreadsheet, AlertCircle, CheckCircle, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ref, uploadBytesResumable } from "firebase/storage";
-import { storage } from "@/lib/firebase";
 import { useAuth } from "@/components/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Progress } from "../components/ui/progress";
@@ -17,6 +15,7 @@ export default function UploadPage() {
     const [progress, setProgress] = useState(0);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    const [analysisResult, setAnalysisResult] = useState<any>(null);
 
     const onDrop = useCallback((acceptedFiles: File[], fileRejections: FileRejection[]) => {
         setError(null);
@@ -66,58 +65,52 @@ export default function UploadPage() {
         setProgress(0);
 
         try {
-            // Create a storage reference
-            // Structure: uploads/{userId}/{timestamp}_{filename}
-            const fileRef = ref(storage, `uploads/${user.uid}/${Date.now()}_${file.name}`);
+            const token = await user.getIdToken();
+            const formData = new FormData();
+            formData.append("file", file);
 
-            const uploadTask = uploadBytesResumable(fileRef, file);
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost:8000/api/analyze/upload", true);
+            xhr.setRequestHeader("Authorization", `Bearer ${token}`);
 
-            uploadTask.on(
-                "state_changed",
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    setProgress(progress);
-                },
-                (error) => {
-                    console.error("Upload error:", error);
-                    setError("Upload failed. Please try again.");
-                    setUploading(false);
-                },
-                async () => {
-                    // Upload completed successfully
-                    try {
-                        const token = await user.getIdToken();
-                        const response = await fetch('http://localhost:8000/api/analyze/upload', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`
-                            },
-                            body: JSON.stringify({
-                                file_path: uploadTask.snapshot.ref.fullPath,
-                                file_name: file.name,
-                                content_type: file.type
-                            })
-                        });
-
-                        if (!response.ok) {
-                            const errorData = await response.json();
-                            throw new Error(errorData.detail || 'Analysis failed');
-                        }
-
-                        const data = await response.json();
-                        console.log("Analysis Result:", data);
-                        // TODO: Navigate to analysis dashboard with data
-
-                        setSuccess(true);
-                    } catch (err: any) {
-                        console.error("Analysis error:", err);
-                        setError(err.message || "Analysis failed after upload.");
-                    } finally {
-                        setUploading(false);
-                    }
+            xhr.upload.onprogress = (event) => {
+                if (event.lengthComputable) {
+                    const percentComplete = (event.loaded / event.total) * 100;
+                    setProgress(percentComplete);
                 }
-            );
+            };
+
+            xhr.onload = async () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        console.log("Analysis Result:", data);
+                        setAnalysisResult(data);
+                        setSuccess(true);
+                    } catch (e) {
+                        console.error("Failed to parse response", e);
+                        setError("Analysis succeeded but response format was invalid.");
+                    }
+                } else {
+                    let errorMessage = "Upload failed.";
+                    try {
+                        const errorData = JSON.parse(xhr.responseText);
+                        errorMessage = errorData.detail || errorMessage;
+                    } catch (e) {
+                        // ignore json parse error
+                    }
+                    setError(errorMessage);
+                    console.error("Upload error:", xhr.statusText);
+                }
+                setUploading(false);
+            };
+
+            xhr.onerror = () => {
+                setError("Network error occurred during upload.");
+                setUploading(false);
+            };
+
+            xhr.send(formData);
 
         } catch (err: any) {
             console.error("Upload error:", err);
@@ -214,11 +207,36 @@ export default function UploadPage() {
                                         <Progress value={progress} className="h-2" />
                                     </div>
                                 ) : success ? (
-                                    <div className="bg-green-500/10 text-green-600 dark:text-green-400 p-4 rounded-lg flex items-center gap-3">
-                                        <CheckCircle className="size-5" />
-                                        <div>
-                                            <p className="font-medium">Upload Complete!</p>
-                                            <p className="text-xs opacity-90">Analysis data received. Check console.</p>
+                                    <div className="space-y-4">
+                                        <div className="bg-green-500/10 text-green-600 dark:text-green-400 p-4 rounded-lg flex items-center gap-3">
+                                            <CheckCircle className="size-5" />
+                                            <div>
+                                                <p className="font-medium">Analysis Complete!</p>
+                                                <p className="text-xs opacity-90">Your file has been processed successfully.</p>
+                                            </div>
+                                        </div>
+
+                                        {analysisResult && (
+                                            <div className="text-sm space-y-2 border-t pt-4">
+                                                <div className="flex justify-between">
+                                                    <span className="text-muted-foreground">Rows Processed:</span>
+                                                    <span className="font-medium">{analysisResult.preview_rows?.length > 0 ? (analysisResult.row_count || "N/A") : 0}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-muted-foreground">Columns Mapped:</span>
+                                                    <span className="font-medium">{Object.keys(analysisResult.mapped_columns || {}).length} / 4</span>
+                                                </div>
+                                                {analysisResult.missing_required_columns?.length > 0 && (
+                                                    <div className="bg-orange-500/10 text-orange-600 dark:text-orange-400 p-3 rounded text-xs mt-2">
+                                                        <span className="font-semibold">Warning:</span> Missing columns: {analysisResult.missing_required_columns.join(", ")}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        <div className="flex justify-end gap-2 pt-2">
+                                            <Button variant="outline" onClick={removeFile}>Upload Another</Button>
+                                            <Button>View Dashboard</Button>
                                         </div>
                                     </div>
                                 ) : (

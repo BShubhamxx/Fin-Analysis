@@ -1,6 +1,5 @@
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from services import parsing_service
 from auth import verify_token
 
@@ -9,16 +8,14 @@ router = APIRouter(
     tags=["analysis"]
 )
 
-class AnalyzeUploadRequest(BaseModel):
-    file_path: str
-    file_name: str
-    content_type: str
-
 @router.post("/upload")
-async def analyze_upload(request: AnalyzeUploadRequest, token: dict = Depends(verify_token)):
+async def analyze_upload(
+    file: UploadFile = File(...), 
+    token: dict = Depends(verify_token)
+):
     """
-    Triggers analysis for an uploaded file.
-    Verifies user token, downloads file from storage, and returns a preview.
+    Triggers analysis for a direct file upload.
+    Verifies user token, parses the uploaded file directly, and returns a preview.
     """
     uid = token.get("uid")
     if not uid:
@@ -26,19 +23,34 @@ async def analyze_upload(request: AnalyzeUploadRequest, token: dict = Depends(ve
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid user token"
         )
-
-    # Security check: Ensure the file path belongs to the user
-    # Expected path format: uploads/{uid}/{timestamp}_{filename}
-    if not request.file_path.startswith(f"uploads/{uid}/"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied to this file"
-        )
         
-    # Download file
-    file_content = parsing_service.download_file_from_storage(request.file_path)
+    # Read file content
+    content = await file.read()
     
     # Parse and preview
-    preview_data = parsing_service.preview_file(file_content, request.file_name)
+    preview_data = parsing_service.preview_file(content, file.filename)
+    
+    # Save metadata to Firestore
+    try:
+        from firebase_admin import firestore
+        db = firestore.client()
+        
+        doc_ref = db.collection("uploads").document()
+        doc_ref.set({
+            "uid": uid,
+            "filename": file.filename,
+            "upload_type": "direct_upload", # Changed from filepath
+            "timestamp": firestore.SERVER_TIMESTAMP,
+            "status": "analyzed",
+            "row_count": preview_data.get("row_count") or len(preview_data.get("preview_rows", [])),
+            "columns": preview_data.get("mapped_columns"),
+            "missing_columns": preview_data.get("missing_required_columns")
+        })
+        
+        preview_data["upload_id"] = doc_ref.id
+        
+    except Exception as e:
+        print(f"Failed to save metadata to Firestore: {e}")
+        # Continue even if saving metadata fails, but log it
     
     return preview_data
