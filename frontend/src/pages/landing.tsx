@@ -4,6 +4,7 @@ import { ArrowRight, BarChart3, ShieldCheck, Zap, TrendingUp, FileText, History 
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ModeToggle } from "@/components/mode-toggle";
+import Logo from "@/assets/logo.svg";
 
 export default function LandingPage() {
     return (
@@ -13,9 +14,7 @@ export default function LandingPage() {
             <nav className="border-b border-border/40 backdrop-blur-md fixed top-0 w-full z-50 bg-background/50">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2 font-bold text-xl text-primary">
-                        <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                            <code className="text-primary">FA</code>
-                        </div>
+                        <img src={Logo} alt="Fin-Analysis Logo" className="h-8 w-auto" />
                         <span>Fin-Analysis</span>
                     </div>
                     <div className="flex items-center gap-4">

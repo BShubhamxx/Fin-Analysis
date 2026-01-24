@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/auth-provider";
 import { ModeToggle } from "@/components/mode-toggle";
+import Logo from "@/assets/logo.svg";
 
 const sidebarItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -21,9 +22,7 @@ export function AppSidebar() {
         <aside className="w-64 border-r border-border bg-card/50 backdrop-blur-sm hidden md:flex flex-col">
             <div className="p-6 border-b border-border">
                 <Link to="/" className="flex items-center gap-2 font-bold text-xl text-primary">
-                    <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <code className="text-primary">FA</code>
-                    </div>
+                    <img src={Logo} alt="Fin-Analysis Logo" className="h-8 w-auto" />
                     Fin-Analysis
                 </Link>
             </div>
