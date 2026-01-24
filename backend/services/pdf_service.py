@@ -71,6 +71,60 @@ class PDFService:
             elements.append(t_spending)
             elements.append(Spacer(1, 20))
 
+            # 3a. Monthly Trend
+            monthly_trend = spending.get("monthly_trend", {})
+            if monthly_trend:
+                elements.append(Paragraph("Monthly Spending Trend", styles['Heading3']))
+                elements.append(Spacer(1, 5))
+                
+                trend_data = [["Month", "Total Amount"]]
+                # Sort by month string (YYYY-MM)
+                sorted_months = sorted(monthly_trend.keys())
+                for month in sorted_months:
+                    trend_data.append([month, f"${monthly_trend[month]:,.2f}"])
+                
+                t_trend = Table(trend_data, colWidths=[150, 150])
+                t_trend.setStyle(TableStyle([
+                    ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+                    ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+                    ('ALIGN', (1,1), (-1,-1), 'RIGHT'),
+                ]))
+                elements.append(t_trend)
+                elements.append(Spacer(1, 20))
+
+            # 3b. Top Categories
+            top_categories = spending.get("top_categories", {})
+            if top_categories:
+                elements.append(Paragraph("Top Spending Categories", styles['Heading3']))
+                elements.append(Spacer(1, 5))
+                
+                cat_data = [["Category", "Trans. Count", "Total Amount"]]
+                # Sort by amount (descending) logic was done in analysis_engine, but here we iterate dict
+                # Analysis engine returns dict {cat_name: {sum: X, count: Y}}
+                # We should convert to list and sort to be sure
+                
+                sorted_cats = sorted(
+                    top_categories.items(), 
+                    key=lambda item: abs(item[1].get('sum', 0)), 
+                    reverse=True
+                )
+                
+                for cat, stats in sorted_cats:
+                    cat_data.append([
+                        cat, 
+                        str(stats.get('count', 0)), 
+                        f"${stats.get('sum', 0):,.2f}"
+                    ])
+                
+                t_cats = Table(cat_data, colWidths=[200, 100, 150])
+                t_cats.setStyle(TableStyle([
+                    ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+                    ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+                    ('ALIGN', (1,1), (-1,-1), 'RIGHT'),
+                ]))
+                elements.append(t_cats)
+                elements.append(Spacer(1, 20))
+
         # 4. Benford's Law Analysis
         benford = analysis.get("benford_analysis", {})
         if benford:

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { SummaryCards } from "@/components/dashboard/summary-cards";
 import { BenfordChart } from "@/components/dashboard/benford-chart";
+import { TrendChart } from "@/components/dashboard/trend-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowRight, Download } from "lucide-react";
@@ -149,6 +150,17 @@ export default function Dashboard() {
                 {/* Spending Summary */}
                 {analysis_report?.spending_summary && (
                     <SummaryCards summary={analysis_report.spending_summary} />
+                )}
+
+                {analysis_report?.spending_summary && (
+                    <SummaryCards summary={analysis_report.spending_summary} />
+                )}
+
+                {/* Monthly Trend Chart */}
+                {analysis_report?.spending_summary?.monthly_trend && (
+                    <div className="w-full">
+                        <TrendChart data={analysis_report.spending_summary.monthly_trend} />
+                    </div>
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
