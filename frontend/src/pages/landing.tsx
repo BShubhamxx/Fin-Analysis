@@ -1,8 +1,9 @@
 
 import { Link } from "react-router-dom";
-import { ArrowRight, BarChart3, ShieldCheck, Zap } from "lucide-react";
+import { ArrowRight, BarChart3, ShieldCheck, Zap, TrendingUp, FileText, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export default function LandingPage() {
     return (
@@ -19,10 +20,11 @@ export default function LandingPage() {
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="hidden md:flex gap-6 text-sm font-medium text-muted-foreground">
-                            <Link to="#features" className="hover:text-foreground transition-colors">Features</Link>
-                            <Link to="#how-it-works" className="hover:text-foreground transition-colors">How it works</Link>
+                            <a href="#features" className="hover:text-foreground transition-colors">Features</a>
+                            <a href="#how-it-works" className="hover:text-foreground transition-colors">How it works</a>
                         </div>
                         <div className="flex items-center gap-2">
+                            <ModeToggle />
                             <Link to="/login">
                                 <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">Log in</Button>
                             </Link>
@@ -78,14 +80,18 @@ export default function LandingPage() {
                 </section>
 
                 {/* Brief Features - Neat & Attractive */}
-                <section className="py-24 border-t border-border/50 bg-secondary/5">
+                <section id="features" className="py-24 border-t border-border/50 bg-secondary/5">
                     <div className="container mx-auto px-4">
+                        <div className="text-center mb-16 max-w-2xl mx-auto">
+                            <h2 className="text-3xl font-bold tracking-tight mb-4">What We Offer</h2>
+                            <p className="text-muted-foreground">Comprehensive tools to secure your financial data and uncover hidden insights.</p>
+                        </div>
                         <div className="grid md:grid-cols-3 gap-12">
                             {[
                                 {
                                     icon: BarChart3,
                                     title: "Benford's Law",
-                                    description: "Mathematically validation of data integrity."
+                                    description: "Mathematical validation of data integrity."
                                 },
                                 {
                                     icon: ShieldCheck,
@@ -96,6 +102,21 @@ export default function LandingPage() {
                                     icon: Zap,
                                     title: "Instant Insights",
                                     description: "AI-generated risk reports in seconds."
+                                },
+                                {
+                                    icon: TrendingUp,
+                                    title: "Trend Analysis",
+                                    description: "Visualize spending patterns over time."
+                                },
+                                {
+                                    icon: FileText,
+                                    title: "Export PDF Reports",
+                                    description: "Download professional reports for your records."
+                                },
+                                {
+                                    icon: History,
+                                    title: "Secure History",
+                                    description: "Access and review your past analyses anytime."
                                 }
                             ].map((feature, i) => (
                                 <motion.div
@@ -112,6 +133,36 @@ export default function LandingPage() {
                                     <h3 className="text-xl font-bold">{feature.title}</h3>
                                     <p className="text-muted-foreground leading-relaxed max-w-xs">{feature.description}</p>
                                 </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* How It Works Section */}
+                <section id="how-it-works" className="py-24 overflow-hidden">
+                    <div className="container mx-auto px-4">
+                        <div className="text-center mb-16 max-w-2xl mx-auto">
+                            <h2 className="text-3xl font-bold tracking-tight mb-4">Simple, Powerful Workflow</h2>
+                            <p className="text-muted-foreground">From raw data to actionable insights in three simple steps.</p>
+                        </div>
+
+                        <div className="relative grid md:grid-cols-3 gap-8">
+                            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-border -z-10 hidden md:block" />
+
+                            {[1, 2, 3].map((step) => (
+                                <div key={step} className="bg-background border border-border/50 p-8 rounded-2xl relative shadow-sm">
+                                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 size-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xl ring-4 ring-background">
+                                        {step}
+                                    </div>
+                                    <h3 className="text-xl font-semibold mt-4 mb-2 text-center">
+                                        {step === 1 ? "Upload Data" : step === 2 ? "AI Analysis" : "View Intelligence"}
+                                    </h3>
+                                    <p className="text-center text-muted-foreground text-sm">
+                                        {step === 1 ? "Drag & drop your CSV or Excel files securely." :
+                                            step === 2 ? "Our engine checks for fraud using Benford's Law." :
+                                                "Get a detailed dashboard with trends and flagged risks."}
+                                    </p>
+                                </div>
                             ))}
                         </div>
                     </div>

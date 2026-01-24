@@ -52,6 +52,13 @@
 @layer base {
     * {
         border-color: hsl(var(--border));
+        @apply transition-colors duration-300;
+    }
+
+    html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 5rem;
+        /* Offset for fixed header */
     }
 
     body {

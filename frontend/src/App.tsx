@@ -1,6 +1,7 @@
 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Layout } from "@/components/layout/layout";
+import { ThemeProvider } from "@/components/theme-provider";
 
 import LoginPage from "@/pages/auth/login";
 import SignupPage from "@/pages/auth/signup";
@@ -11,30 +12,34 @@ import { ProtectedRoute } from "@/components/protected-route";
 
 import Dashboard from "@/pages/dashboard";
 import HistoryPage from "@/pages/history";
+import SettingsPage from "@/pages/settings";
 
 function App() {
     return (
-        <BrowserRouter>
-            <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/signup" element={<SignupPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+            <BrowserRouter>
+                <Routes>
+                    {/* Public Routes */}
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/signup" element={<SignupPage />} />
+                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-                {/* Protected Routes */}
-                <Route element={<ProtectedRoute />}>
-                    <Route element={<Layout />}>
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/upload" element={<UploadPage />} />
-                        <Route path="/history" element={<HistoryPage />} />
+                    {/* Protected Routes */}
+                    <Route element={<ProtectedRoute />}>
+                        <Route element={<Layout />}>
+                            <Route path="/dashboard" element={<Dashboard />} />
+                            <Route path="/upload" element={<UploadPage />} />
+                            <Route path="/history" element={<HistoryPage />} />
+                            <Route path="/settings" element={<SettingsPage />} />
+                        </Route>
                     </Route>
-                </Route>
 
-                {/* Catch all */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-        </BrowserRouter>
+                    {/* Catch all */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </BrowserRouter>
+        </ThemeProvider>
     )
 }
 

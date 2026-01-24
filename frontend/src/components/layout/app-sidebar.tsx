@@ -1,14 +1,16 @@
 
-import { Upload, History, LayoutDashboard, LogOut } from "lucide-react";
+import { Upload, History, LayoutDashboard, LogOut, Settings } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/auth-provider";
+import { ModeToggle } from "@/components/mode-toggle";
 
 const sidebarItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
     { icon: Upload, label: "Upload", href: "/upload" },
     { icon: History, label: "History", href: "/history" },
+    { icon: Settings, label: "Settings", href: "/settings" },
 ];
 
 export function AppSidebar() {
@@ -48,15 +50,18 @@ export function AppSidebar() {
                 })}
             </nav>
 
-            <div className="p-4 border-t border-border">
+            <div className="p-4 border-t border-border flex items-center justify-between gap-2">
                 <Button
                     variant="ghost"
-                    className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive"
+                    className="flex-1 justify-start gap-3 text-muted-foreground hover:text-destructive"
                     onClick={() => signOut()}
                 >
                     <LogOut className="size-4" />
                     Sign Out
                 </Button>
+                <div className="shrink-0">
+                    <ModeToggle />
+                </div>
             </div>
         </aside>
     )
