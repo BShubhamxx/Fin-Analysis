@@ -1,7 +1,8 @@
 
 import { useCallback, useState } from "react";
 import { useDropzone, FileRejection } from "react-dropzone";
-import { CloudUpload, FileSpreadsheet, AlertCircle, CheckCircle, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import { CloudUpload, FileSpreadsheet, AlertCircle, CheckCircle, X, ExternalLink, Download } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/components/auth-provider";
 import { Button } from "@/components/ui/button";
@@ -122,6 +123,33 @@ export default function UploadPage() {
         }
     };
 
+    const handleExport = async () => {
+        if (!analysisResult?.upload_id || !user) return;
+
+        try {
+            const token = await user.getIdToken();
+            const response = await fetch(`http://localhost:8000/api/export/${analysisResult.upload_id}/pdf`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (!response.ok) throw new Error("Export failed");
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Analysis_${analysisResult.filename || 'Report'}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+        } catch (err) {
+            console.error("Export error:", err);
+            // Optional: set a temporary error or toast, for now just log
+        }
+    };
+
     return (
         <div className="container mx-auto px-4 py-8 max-w-5xl">
             <div className="mb-8 text-center space-y-2">
@@ -233,9 +261,18 @@ export default function UploadPage() {
                                 <p className="text-xs opacity-90">Your file has been processed successfully.</p>
                             </div>
                         </div>
-                        <Button variant="ghost" size="sm" onClick={removeFile} className="hover:bg-green-500/20">
-                            Upload New File
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={handleExport} className="bg-background/50 hover:bg-background/80 border-green-200 text-green-700">
+                                <Download className="mr-2 h-3 w-3" />
+                                Download Report
+                            </Button>
+                            <Button variant="ghost" size="sm" asChild className="hover:bg-green-500/20 text-green-700">
+                                <Link to={`/dashboard?id=${analysisResult.upload_id}`}>
+                                    <ExternalLink className="mr-2 h-3 w-3" />
+                                    View Dashboard
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
 
                     {analysisResult?.analysis_report?.spending_summary && (
@@ -272,15 +309,15 @@ export default function UploadPage() {
 
                             {analysisResult.analysis_report?.benford_analysis && (
                                 <Card className={`${analysisResult.analysis_report.benford_analysis.verdict === 'Pass' ? 'border-green-200 bg-green-50/50 dark:bg-green-900/10' :
-                                        analysisResult.analysis_report.benford_analysis.verdict === 'Fail' ? 'border-red-200 bg-red-50/50 dark:bg-red-900/10' :
-                                            'border-yellow-200 bg-yellow-50/50 dark:bg-yellow-900/10'
+                                    analysisResult.analysis_report.benford_analysis.verdict === 'Fail' ? 'border-red-200 bg-red-50/50 dark:bg-red-900/10' :
+                                        'border-yellow-200 bg-yellow-50/50 dark:bg-yellow-900/10'
                                     }`}>
                                     <CardHeader className="pb-2">
                                         <div className="flex items-center justify-between">
                                             <CardTitle className="text-base">Fraud Detection</CardTitle>
                                             <span className={`px-2 py-1 rounded text-xs font-bold ${analysisResult.analysis_report.benford_analysis.verdict === 'Pass' ? 'bg-green-100 text-green-700' :
-                                                    analysisResult.analysis_report.benford_analysis.verdict === 'Fail' ? 'bg-red-100 text-red-700' :
-                                                        'bg-yellow-100 text-yellow-700'
+                                                analysisResult.analysis_report.benford_analysis.verdict === 'Fail' ? 'bg-red-100 text-red-700' :
+                                                    'bg-yellow-100 text-yellow-700'
                                                 }`}>
                                                 {analysisResult.analysis_report.benford_analysis.verdict.toUpperCase()}
                                             </span>

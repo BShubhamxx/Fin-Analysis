@@ -1,13 +1,24 @@
-
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from auth import get_current_user
-from routers import analysis, history
+from routers import analysis, history, export
+# from services.pdf_service import PDFService
+from utils.serialization import make_serializable
 
-app = FastAPI(title="Fin-Analysis API")
+app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(analysis.router)
 app.include_router(history.router)
+app.include_router(export.router)
 
 origins = [
     "http://localhost:5173",

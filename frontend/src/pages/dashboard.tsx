@@ -5,7 +5,7 @@ import { SummaryCards } from "@/components/dashboard/summary-cards";
 import { BenfordChart } from "@/components/dashboard/benford-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowRight } from "lucide-react";
+import { Loader2, ArrowRight, Download } from "lucide-react";
 import { useSearchParams, Link } from "react-router-dom";
 
 export default function Dashboard() {
@@ -60,6 +60,34 @@ export default function Dashboard() {
         fetchAnalysis();
     }, [user, searchParams]);
 
+    const handleExport = async () => {
+        if (!latestAnalysis || !user) return;
+
+        try {
+            const token = await user.getIdToken();
+            const response = await fetch(`http://localhost:8000/api/export/${latestAnalysis.id}/pdf`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (!response.ok) throw new Error("Export failed");
+
+            // Trigger download
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Analysis_${latestAnalysis.filename}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+        } catch (error) {
+            console.error("Export error:", error);
+            // Ideally show a toast notification here
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex h-[50vh] items-center justify-center">
@@ -104,6 +132,10 @@ export default function Dashboard() {
                     </p>
                 </div>
                 <div className="flex gap-2">
+                    <Button variant="outline" onClick={handleExport}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Export Report
+                    </Button>
                     <Button variant="outline" asChild>
                         <Link to="/history">View History</Link>
                     </Button>
