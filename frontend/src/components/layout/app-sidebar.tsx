@@ -3,6 +3,7 @@ import { Upload, History, LayoutDashboard, LogOut } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/components/auth-provider";
 
 const sidebarItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -12,6 +13,7 @@ const sidebarItems = [
 
 export function AppSidebar() {
     const location = useLocation();
+    const { signOut } = useAuth();
 
     return (
         <aside className="w-64 border-r border-border bg-card/50 backdrop-blur-sm hidden md:flex flex-col">
@@ -47,7 +49,11 @@ export function AppSidebar() {
             </nav>
 
             <div className="p-4 border-t border-border">
-                <Button variant="ghost" className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive">
+                <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive"
+                    onClick={() => signOut()}
+                >
                     <LogOut className="size-4" />
                     Sign Out
                 </Button>

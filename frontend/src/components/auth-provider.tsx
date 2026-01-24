@@ -1,16 +1,17 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { User, onAuthStateChanged } from "firebase/auth";
+import { User, onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
 interface AuthContextType {
     user: User | null;
     loading: boolean;
+    signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
     user: null,
     loading: true,
+    signOut: async () => { },
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -26,8 +27,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return unsubscribe;
     }, []);
 
+    const signOutUser = async () => {
+        try {
+            await signOut(auth);
+        } catch (error) {
+            console.error("Error signing out:", error);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, loading }}>
+        <AuthContext.Provider value={{ user, loading, signOut: signOutUser }}>
             {!loading && children}
         </AuthContext.Provider>
     );
