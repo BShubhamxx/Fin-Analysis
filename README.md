@@ -89,7 +89,7 @@ Create a `.env` file in the `backend/` directory:
 # Backend .env
 PORT=8000
 FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+
 GOOGLE_APPLICATION_CREDENTIALS=service-account.json
 GEMINI_API_KEY=your_gemini_api_key
 ```
