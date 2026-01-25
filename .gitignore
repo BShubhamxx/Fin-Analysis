@@ -122,3 +122,10 @@ dist
 service-account.json
 firebase-adminsdk-*.json
 cors.json
+
+backend/.env
+**/__pycache__/
+backend/venv/
+backend/check_models.py
+backend/available_models.txt
+backend/test_ai_connection.py

@@ -2,11 +2,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lightbulb, TrendingUp, AlertCircle } from "lucide-react";
 
-interface AnalysisInsightsProps {
-    summary: any;
+interface AIInsightsData {
+    summary: string;
+    key_findings: string[];
+    recommendations: string[];
 }
 
-export function AnalysisInsights({ summary }: AnalysisInsightsProps) {
+interface AnalysisInsightsProps {
+    summary: any;
+    aiInsights?: AIInsightsData;
+}
+
+export function AnalysisInsights({ summary, aiInsights }: AnalysisInsightsProps) {
     if (!summary) return null;
 
     // Helper to find highest spending month
@@ -42,9 +49,52 @@ export function AnalysisInsights({ summary }: AnalysisInsightsProps) {
 
     const topMonth = getHighestMonth();
     const topCategory = getTopCategory();
-    const totalVolume = summary.total_volume || 0;
     const avgTransaction = summary.avg_transaction || 0;
 
+    // AI MODE
+    if (aiInsights && aiInsights.summary && !aiInsights.summary.includes("unavailable")) {
+        return (
+            <Card className="bg-purple-50/50 dark:bg-purple-900/10 border-purple-100 dark:border-purple-900">
+                <CardHeader className="pb-2">
+                    <div className="flex items-center gap-2">
+                        <Lightbulb className="size-5 text-purple-600" />
+                        <CardTitle className="text-lg text-purple-700 dark:text-purple-300">AI Analysis & Insights</CardTitle>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <p className="text-sm text-foreground/80 leading-relaxed italic">
+                        "{aiInsights.summary}"
+                    </p>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="bg-background/60 p-4 rounded-lg border">
+                            <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                                <AlertCircle className="size-4 text-amber-500" /> Key Findings
+                            </h4>
+                            <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                                {aiInsights.key_findings.map((finding, i) => (
+                                    <li key={i}>{finding}</li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <div className="bg-background/60 p-4 rounded-lg border">
+                            <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                                <TrendingUp className="size-4 text-green-500" /> Recommendations
+                            </h4>
+                            <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                                {aiInsights.recommendations.map((rec, i) => (
+                                    <li key={i}>{rec}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    // FALLBACK (Rule-Based)
     return (
         <Card className="bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900">
             <CardHeader className="pb-2">

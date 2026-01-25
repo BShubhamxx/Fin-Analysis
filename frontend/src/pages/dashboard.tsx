@@ -155,7 +155,10 @@ export default function Dashboard() {
 
                 {/* Analysis Insights */}
                 {analysis_report?.spending_summary && (
-                    <AnalysisInsights summary={analysis_report.spending_summary} />
+                    <AnalysisInsights
+                        summary={analysis_report.spending_summary}
+                        aiInsights={analysis_report.ai_insights}
+                    />
                 )}
 
                 {analysis_report?.spending_summary && (

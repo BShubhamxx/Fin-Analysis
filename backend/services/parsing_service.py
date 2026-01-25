@@ -61,6 +61,22 @@ def preview_file(file_content: bytes | io.BytesIO, filename: str):
                 "spending_summary": spending_summary
             }
         }
+
+        # AI INTEGRATION
+        # We perform this *after* preparing the basic preview, so if it fails, we still have data.
+        if benford_stats and spending_summary:
+            try:
+                from services.ai_service import ai_service
+                analysis_data_for_ai = {
+                    "benford_analysis": benford_stats,
+                    "spending_summary": spending_summary
+                }
+                ai_insights = ai_service.generate_insights(analysis_data_for_ai)
+                preview["analysis_report"]["ai_insights"] = ai_insights
+            except Exception as e:
+                print(f"AI Service failed: {e}")
+                # Fallback or leave empty, frontend handles missing insights
+
         
         return preview
 
