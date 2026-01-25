@@ -35,6 +35,7 @@ Fin-Analysis is a modern wList of features offered by the solutioneb application
 ### Backend
 *   **Framework**: FastAPI (Python)
 *   **Data Processing**: Pandas, NumPy
+*   **AI/LLM**: Google Gemini (via `google-generativeai`)
 *   **Database**: Firebase Firestore (NoSQL)
 *   **PDF Generation**: ReportLab
 
@@ -88,9 +89,11 @@ Create a `.env` file in the `backend/` directory:
 # Backend .env
 PORT=8000
 FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+FIREBASE_STORAGE_BUCKET=your-project.appspot.com
 GOOGLE_APPLICATION_CREDENTIALS=service-account.json
+GEMINI_API_KEY=your_gemini_api_key
 ```
-*Note: You need to download a Service Account JSON key from Firebase Console -> Project Settings -> Service Accounts and place it in the `backend/` folder as `service-account.json`.*
+*Note: You need a Gemini API Key from [Google AI Studio](https://aistudio.google.com/app/apikey) and a Firebase Service Account JSON.*
 
 Run the backend server:
 
