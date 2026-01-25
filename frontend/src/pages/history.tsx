@@ -11,8 +11,8 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, FileText, AlertCircle } from "lucide-react";
-
+import { Loader2, FileText, AlertCircle, Trash, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
 interface HistoryItem {
@@ -39,9 +39,59 @@ export default function HistoryPage() {
     const [history, setHistory] = useState<HistoryItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+
+    const handleDelete = async (id: string, e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent row click
+        if (!user) return;
+
+        if (!window.confirm("Are you sure you want to delete this analysis? This cannot be undone.")) {
+            return;
+        }
+
+        setDeletingId(id);
+        try {
+            const token = await user.getIdToken();
+            const response = await fetch(`http://localhost:8000/api/history/${id}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (!response.ok) throw new Error("Failed to delete");
+
+            setHistory(prev => prev.filter(item => item.id !== id));
+        } catch (err) {
+            alert("Failed to delete item.");
+            console.error(err);
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
+    const handleClearAll = async () => {
+        if (!user) return;
+
+        if (!window.confirm("Are you sure you want to DELETE ALL history? This action cannot be undone.")) {
+            return;
+        }
+
+        try {
+            const token = await user.getIdToken();
+            const response = await fetch(`http://localhost:8000/api/history/`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (!response.ok) throw new Error("Failed to clear history");
+
+            setHistory([]);
+        } catch (err) {
+            alert("Failed to clear history.");
+            console.error(err);
+        }
+    };
 
     useEffect(() => {
-        // ... (existing fetch logic remains same)
         const fetchHistory = async () => {
             if (!user) return;
             try {
@@ -69,7 +119,6 @@ export default function HistoryPage() {
         fetchHistory();
     }, [user]);
 
-    // ... (loading/error states remain same)
     if (loading) {
         return (
             <div className="flex h-[50vh] items-center justify-center">
@@ -89,11 +138,19 @@ export default function HistoryPage() {
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-5xl">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold tracking-tight">Analysis History</h1>
-                <p className="text-muted-foreground">
-                    View your past uploads and fraud detection reports. Click on a row to view full analysis.
-                </p>
+            <div className="flex items-center justify-between mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Analysis History</h1>
+                    <p className="text-muted-foreground">
+                        View your past uploads and fraud detection reports.
+                    </p>
+                </div>
+                {history.length > 0 && (
+                    <Button variant="destructive" size="sm" onClick={handleClearAll}>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Clear History
+                    </Button>
+                )}
             </div>
 
             <Card>
@@ -115,6 +172,7 @@ export default function HistoryPage() {
                                     <TableHead>Rows</TableHead>
                                     <TableHead>Total Volume</TableHead>
                                     <TableHead>Fraud Check</TableHead>
+                                    <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -156,6 +214,18 @@ export default function HistoryPage() {
                                             ) : (
                                                 <span className="text-muted-foreground text-xs">-</span>
                                             )}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                                onClick={(e) => handleDelete(item.id, e)}
+                                                disabled={deletingId === item.id}
+                                            >
+                                                {deletingId === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash className="h-4 w-4" />}
+                                                <span className="sr-only">Delete</span>
+                                            </Button>
                                         </TableCell>
                                     </TableRow>
                                 ))}
