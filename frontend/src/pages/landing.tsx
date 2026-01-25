@@ -21,6 +21,7 @@ export default function LandingPage() {
                         <div className="hidden md:flex gap-6 text-sm font-medium text-muted-foreground">
                             <a href="#features" className="hover:text-foreground transition-colors">Features</a>
                             <a href="#how-it-works" className="hover:text-foreground transition-colors">How it works</a>
+                            <a href="#about" className="hover:text-foreground transition-colors">About</a>
                         </div>
                         <div className="flex items-center gap-2">
                             <ModeToggle />
@@ -166,6 +167,57 @@ export default function LandingPage() {
                         </div>
                     </div>
                 </section>
+
+                {/* Use Cases / About Section */}
+                <section id="about" className="py-24 bg-secondary/5 border-t border-border/50">
+                    <div className="container mx-auto px-4">
+                        <div className="flex flex-col md:flex-row items-center gap-12">
+                            <div className="md:w-1/2 space-y-6">
+                                <h2 className="text-3xl font-bold tracking-tight">Built for Financial Clarity.</h2>
+                                <p className="text-lg text-muted-foreground leading-relaxed">
+                                    Fin-Analysis isn't just a calculator; it's an automated forensic auditor.
+                                    Whether you are a small business owner checking for duplicate payments,
+                                    an accountant verifying ledger integrity, or a data analyst hunting for outliers,
+                                    our platform provides the rigorous checks you need without the complex setup.
+                                </p>
+                                <ul className="space-y-4 pt-4">
+                                    {[
+                                        "Detect potential invoice fraud instantly.",
+                                        "Validate data quality before major audits.",
+                                        "Visualize spending habits and cash flow trends.",
+                                        "Secure, client-side processing priority."
+                                    ].map((item, i) => (
+                                        <li key={i} className="flex items-center gap-3">
+                                            <div className="size-6 rounded-full bg-green-500/10 flex items-center justify-center text-green-600">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polyline points="20 6 9 17 4 12" />
+                                                </svg>
+                                            </div>
+                                            <span className="text-foreground/80 font-medium">{item}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                            <div className="md:w-1/2 relative">
+                                <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-blue-500/20 blur-3xl rounded-full opacity-30" />
+                                <div className="relative bg-card border border-border/50 rounded-2xl p-8 shadow-2xl">
+                                    <div className="space-y-4">
+                                        <div className="h-2 w-1/3 bg-muted rounded-full" />
+                                        <div className="h-2 w-2/3 bg-muted rounded-full" />
+                                        <div className="h-32 w-full bg-secondary/50 rounded-xl border border-border/50 flex items-center justify-center text-muted-foreground/50 text-sm">
+                                            Automated Report Preview
+                                        </div>
+                                        <div className="h-2 w-3/4 bg-muted rounded-full" />
+                                        <div className="h-2 w-1/2 bg-muted rounded-full" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Use Cases / About Section */}
+
 
             </main>
 
