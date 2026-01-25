@@ -1,4 +1,5 @@
-# Fin-Analysis <img src="frontend/src/assets/logo.svg" alt="Fin-Analysis Dashboard" width="100"/>
+# Fin-Analysis        
+<img src="frontend/src/assets/logo.svg" alt="Fin-Analysis Dashboard" width="100"/>
 
 **AI-Powered Financial Integrity & Anomaly Detection**
 
