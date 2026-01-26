@@ -40,10 +40,43 @@ class PDFService:
             ('ALIGN', (0,0), (-1,-1), 'LEFT'),
         ]))
         elements.append(t_meta)
+        elements.append(t_meta)
         elements.append(Spacer(1, 20))
+
+        # 2a. AI Executive Summary
+        analysis = data.get("analysis_report", {})
+        ai_insights = analysis.get("ai_insights", {})
+        
+        # Check if valid AI data exists (not error message)
+        if ai_insights and ai_insights.get("summary") and "unavailable" not in ai_insights.get("summary") and "Error" not in ai_insights.get("summary"):
+            elements.append(Paragraph("AI Executive Summary", heading_style))
+            elements.append(Spacer(1, 10))
+            
+            # Summary Text
+            # ReportLab requires XML-like escaping for tags, but we assume simple text. 
+            # Ideally sanitized, but for now direct injection.
+            elements.append(Paragraph(f"<b>Summary:</b> {ai_insights['summary']}", normal_style))
+            elements.append(Spacer(1, 10))
+            
+            # Key Findings
+            findings = ai_insights.get("key_findings", [])
+            if findings:
+                elements.append(Paragraph("Key Findings:", styles['Heading3']))
+                for item in findings:
+                    # Bullet point
+                    elements.append(Paragraph(f"• {item}", normal_style))
+                elements.append(Spacer(1, 5))
+
+            # Recommendations
+            recommendations = ai_insights.get("recommendations", [])
+            if recommendations:
+                elements.append(Paragraph("Recommendations:", styles['Heading3']))
+                for item in recommendations:
+                    elements.append(Paragraph(f"• {item}", normal_style))
+            
+            elements.append(Spacer(1, 20))
         
         # 3. Spending Summary
-        analysis = data.get("analysis_report", {})
         spending = analysis.get("spending_summary", {})
         
         if spending:

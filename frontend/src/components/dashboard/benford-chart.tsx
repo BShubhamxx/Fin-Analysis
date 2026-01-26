@@ -1,6 +1,6 @@
 
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface BenfordChartProps {
     distribution: Record<string, { actual: number; expected: number }>;
@@ -20,6 +20,10 @@ export function BenfordChart({ distribution }: BenfordChartProps) {
         <Card className="col-span-1 md:col-span-2">
             <CardHeader>
                 <CardTitle>Benford's Law Analysis</CardTitle>
+                <CardDescription>
+                    Compares your data's leading digit frequency (Actual) against Benford's Law (Expected).
+                    Large deviations suggest potential data irregularities.
+                </CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="h-[300px] w-full">
