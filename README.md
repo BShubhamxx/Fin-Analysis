@@ -3,7 +3,7 @@
 
 **AI-Powered Financial Integrity & Anomaly Detection**
 
-Fin-Analysis is a modern wList of features offered by the solutioneb application designed to help businesses, auditors, and data analysts detect financial fraud and irregularities using advanced statistical methods, including **Benford's Law**. It provides an automated, secure, and user-friendly platform to validate financial data instantly.
+Fin-Analysis is a modern web application designed to help businesses, auditors, and data analysts detect financial fraud and irregularities using advanced statistical methods, including **Benford's Law**. It provides an automated, secure, and user-friendly platform to validate financial data instantly.
 
 
 
