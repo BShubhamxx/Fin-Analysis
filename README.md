@@ -9,7 +9,7 @@ Fin-Analysis is a modern web application designed to help businesses, auditors, 
 
 ---
 
-## 🚀 Key Features
+##  Key Features
 
 *   **🛡️ Benford’s Law Analysis**: Automatically validates natural data distribution to flag potential manipulation.
 *   **📉 Anomaly Detection**: Highlights suspicious transactions and statistical outliers.
@@ -153,7 +153,7 @@ The app will open at `http://localhost:5173`.
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions are welcome!
 1.  Fork the repo.
