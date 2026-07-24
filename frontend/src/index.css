@@ -73,7 +73,72 @@
         @apply backdrop-blur-lg bg-white/80 dark:bg-slate-900/80 border border-white/20;
     }
 
-    .glass-card {
+.glass-card {
         @apply glass shadow-xl rounded-lg;
     }
+}
+
+@layer components {
+    .landing-page {
+        --landing-lime: #9af36f;
+        --landing-blue: #72a2ff;
+    }
+
+    .landing-page .nav-link,
+    .landing-page .eyebrow {
+        @apply font-mono text-[10px] uppercase tracking-[0.18em] transition-colors;
+    }
+
+    .landing-page .nav-link {
+        @apply text-white/45 hover:text-white;
+    }
+
+    .landing-page .eyebrow {
+        @apply text-[#9af36f];
+    }
+
+    .landing-grid {
+        background-image: linear-gradient(rgba(255, 255, 255, .045) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .045) 1px, transparent 1px);
+        background-size: 72px 72px;
+        mask-image: linear-gradient(to bottom, black 0%, transparent 85%);
+    }
+
+    .hero-glow {
+        pointer-events: none;
+        filter: blur(90px);
+        opacity: .34;
+    }
+
+    .hero-glow-blue {
+        background: radial-gradient(circle, rgba(72, 123, 255, .7), transparent 68%);
+    }
+
+    .hero-glow-green {
+        background: radial-gradient(circle, rgba(154, 243, 111, .35), transparent 68%);
+    }
+
+    .hero-orbit {
+        pointer-events: none;
+        box-shadow: 0 0 80px rgba(114, 162, 255, .08), inset 0 0 80px rgba(114, 162, 255, .05);
+        animation: orbitPulse 8s ease-in-out infinite;
+    }
+
+    .hero-orbit-delayed {
+        animation-delay: -3s;
+        transform: translateX(-50%) rotate(42deg);
+    }
+
+    .ticker {
+        animation: tickerMove 34s linear infinite;
+    }
+}
+
+@keyframes orbitPulse {
+    0%, 100% { opacity: .35; transform: translateX(-50%) scale(.96); }
+    50% { opacity: .8; transform: translateX(-50%) scale(1.04); }
+}
+
+@keyframes tickerMove {
+    from { transform: translateX(0); }
+    to { transform: translateX(-18%); }
 }
