@@ -19,10 +19,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            setUser(user);
-            setLoading(false);
-        });
+        const unsubscribe = onAuthStateChanged(
+            auth,
+            (user) => {
+                setUser(user);
+                setLoading(false);
+            },
+            () => {
+                // Public pages should remain usable when Firebase is not configured locally.
+                setLoading(false);
+            },
+        );
 
         return unsubscribe;
     }, []);
@@ -37,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return (
         <AuthContext.Provider value={{ user, loading, signOut: signOutUser }}>
-            {!loading && children}
+            {children}
         </AuthContext.Provider>
     );
 }
